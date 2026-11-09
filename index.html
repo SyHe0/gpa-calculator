@@ -9,8 +9,27 @@
 <body>
   <header class="topbar">
     <h1>GPA Hesaplayıcı</h1>
-    <button class="btn primary" data-action="add-course">+ Ders ekle</button>
+    <div class="topbar-actions">
+      <button class="btn" data-action="open-picker">Boğaziçi'den ders seç</button>
+      <button class="btn primary" data-action="add-course">+ Boş ders ekle</button>
+    </div>
   </header>
+
+  <dialog id="picker" class="picker">
+    <div class="picker-head">
+      <div>
+        <h2>Boğaziçi derslerinden seç</h2>
+        <p class="hint" id="picker-meta"></p>
+      </div>
+      <button class="icon-btn" data-action="close-picker" title="Kapat">×</button>
+    </div>
+    <div class="picker-filters">
+      <input type="search" id="picker-search" placeholder="Kod ya da ad ara (ör. CMPE150, calculus)" autocomplete="off">
+      <select id="picker-prefix"><option value="">Tüm bölüm kodları</option></select>
+    </div>
+    <ul id="picker-list" class="picker-list"></ul>
+    <p class="hint" id="picker-count"></p>
+  </dialog>
 
   <main class="layout">
     <section class="summary card">
@@ -51,6 +70,7 @@
     </details>
   </main>
 
+  <script src="data/courses.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

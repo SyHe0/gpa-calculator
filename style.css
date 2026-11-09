@@ -218,7 +218,50 @@ input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1
 .scale input { width: 100%; }
 .row-actions { display: flex; gap: 8px; margin-top: 8px; }
 
+.topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.btn:disabled { opacity: 0.6; cursor: default; }
+
+/* Ders seçici */
+.picker {
+  width: min(760px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  background: var(--surface);
+  color: var(--text);
+}
+.picker[open] { display: flex; flex-direction: column; gap: 10px; }
+.picker::backdrop { background: rgba(15, 23, 42, 0.45); }
+.picker-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.picker-head h2 { margin: 0 0 2px; font-size: 17px; }
+.picker-head .hint { margin: 0; }
+.picker-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.picker-filters input { flex: 1 1 260px; }
+.picker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-height: 200px;
+}
+.picker-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.picker-row:last-child { border-bottom: none; }
+.picker-info { flex: 1 1 auto; display: grid; gap: 2px; min-width: 0; }
+.picker-info span { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.picker-credit { color: var(--muted); font-size: 12px; white-space: nowrap; }
+#picker-count { margin: 0; }
+
 @media (max-width: 600px) {
+  .picker-row { flex-wrap: wrap; }
   .topbar { padding: 12px 16px; }
   .weight input[type="range"] { width: 100px; }
   .summary-stats { gap: 20px; }
