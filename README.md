@@ -13,6 +13,16 @@ Tarayıcıda çalışan, kurulum gerektirmeyen bir GPA hesaplayıcı.
 - **Dönem GPA ve Genel GPA (CGPA)**: önceki GPA ve kredi girilirse genel ortalama hesaplanır
 - **Düzenlenebilir harf notu skalası** (varsayılan: AA–FF, 4'lük sistem)
 - Veriler tarayıcıda (`localStorage`) otomatik saklanır
+- **Boğaziçi'den ders seç**: Boğaziçi ders programındaki tüm dersler (kod, ad, kredi, AKTS) aranıp tek tıkla eklenir
+
+## Ders listesini güncelleme
+
+Ders verisi `data/courses.js` dosyasındadır. Yeni dönem için `tools/departments.json` içindeki
+`semester` ve bölüm linklerini güncelleyip şunu çalıştır:
+
+```bash
+node tools/fetch-courses.mjs
+```
 
 ## Çalıştırma
 

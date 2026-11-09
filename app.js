@@ -315,6 +315,69 @@ function render() {
   updateResults();
 }
 
+// ---------- Boğaziçi ders seçici ----------
+const CATALOG = window.BOUN_COURSES || null;
+const PICKER_LIMIT = 150;
+
+const prefixOf = (code) => (code.match(/^[A-Z]+/) || [""])[0];
+const normalize = (s) => s.toLocaleLowerCase("tr").replace(/\s+/g, "");
+
+function addedCodes() {
+  return new Set(state.courses.map((c) => c.code).filter(Boolean));
+}
+
+function setupPicker() {
+  if (!CATALOG) {
+    document.querySelector('[data-action="open-picker"]').hidden = true;
+    return;
+  }
+  const prefixes = [...new Set(CATALOG.courses.map((c) => prefixOf(c[0])))].sort();
+  document.getElementById("picker-prefix").append(...prefixes.map((p) => el("option", { value: p }, p)));
+  document.getElementById("picker-meta").textContent =
+    `${CATALOG.semester} dönemi · ${CATALOG.courses.length} ders · ${CATALOG.fetchedAt} tarihinde alındı`;
+  document.getElementById("picker-search").addEventListener("input", renderPickerList);
+  document.getElementById("picker-prefix").addEventListener("change", renderPickerList);
+}
+
+function renderPickerList() {
+  const q = normalize(document.getElementById("picker-search").value);
+  const prefix = document.getElementById("picker-prefix").value;
+  const added = addedCodes();
+
+  const matches = CATALOG.courses.filter(([code, name]) =>
+    (!prefix || prefixOf(code) === prefix) &&
+    (!q || normalize(code).includes(q) || normalize(name).includes(q)));
+
+  const list = document.getElementById("picker-list");
+  list.replaceChildren(...matches.slice(0, PICKER_LIMIT).map(([code, name, credits, ects]) => {
+    const isAdded = added.has(code);
+    return el("li", { class: "picker-row" },
+      el("div", { class: "picker-info" },
+        el("b", {}, code),
+        el("span", {}, name)),
+      el("span", { class: "picker-credit" }, `${credits} kredi · ${ects} AKTS`),
+      el("button", {
+        class: `btn ${isAdded ? "" : "primary"}`, disabled: isAdded,
+        dataset: { action: "pick-course", code },
+      }, isAdded ? "Eklendi" : "Ekle"));
+  }));
+
+  document.getElementById("picker-count").textContent = matches.length > PICKER_LIMIT
+    ? `${matches.length} sonuçtan ilk ${PICKER_LIMIT} tanesi gösteriliyor, aramayı daraltabilirsin.`
+    : `${matches.length} sonuç`;
+}
+
+function pickCourse(code) {
+  const row = CATALOG.courses.find((c) => c[0] === code);
+  if (!row || addedCodes().has(code)) return;
+  const course = makeCourse(`${row[0]} – ${row[1]}`);
+  course.code = row[0];
+  course.credits = row[2];
+  state.courses.push(course);
+  render();
+  renderPickerList();
+}
+
 // ---------- Olaylar ----------
 function onInput(e) {
   const t = e.target;
@@ -386,6 +449,17 @@ function onClick(e) {
 
   if (action === "add-course") {
     state.courses.push(makeCourse());
+  } else if (action === "open-picker") {
+    renderPickerList();
+    document.getElementById("picker").showModal();
+    document.getElementById("picker-search").focus();
+    return;
+  } else if (action === "close-picker") {
+    document.getElementById("picker").close();
+    return;
+  } else if (action === "pick-course") {
+    pickCourse(t.dataset.code);
+    return;
   } else if (action === "scale-add") {
     state.scale.push({ letter: "", min: 0, points: 0 });
     renderSettings();
@@ -425,6 +499,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("change", onInput);
   document.addEventListener("click", onClick);
   if (!load()) state.courses.push(makeCourse("Matematik"));
+  setupPicker();
   renderSettings();
   render();
 });
