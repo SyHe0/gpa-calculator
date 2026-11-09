@@ -23,7 +23,34 @@ const DEFAULT_SCALE = [
 ];
 
 // ---------- Durum ----------
-let state = { courses: [], scale: DEFAULT_SCALE.map((r) => ({ ...r })) };
+const STORAGE_KEY = "gpa-calculator-v1";
+
+function defaultState() {
+  return {
+    courses: [],
+    scale: DEFAULT_SCALE.map((r) => ({ ...r })),
+    previous: { gpa: "", credits: "" },
+  };
+}
+
+let state = defaultState();
+
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) { /* depolama kapalı olabilir */ }
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.courses)) return false;
+    state = { ...defaultState(), ...data };
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 const num = (v) => (v === "" || v === null || v === undefined || isNaN(Number(v)) ? null : Number(v));
@@ -109,7 +136,14 @@ function computeGPA() {
     pts += r.grade.points * cr;
     credits += cr;
   }
-  return { gpa: credits > 0 ? pts / credits : null, credits };
+  const prevGpa = num(state.previous.gpa);
+  const prevCr = num(state.previous.credits) ?? 0;
+  let cumulative = null;
+  if (prevGpa !== null && prevCr > 0) {
+    const totalCr = credits + prevCr;
+    cumulative = (pts + prevGpa * prevCr) / totalCr;
+  }
+  return { gpa: credits > 0 ? pts / credits : null, credits, cumulative };
 }
 
 // ---------- DOM yardımcıları ----------
@@ -215,12 +249,26 @@ function renderCourse(course) {
 }
 
 function renderSummary() {
-  const { gpa, credits } = computeGPA();
-  const box = document.getElementById("summary");
+  const { gpa, credits, cumulative } = computeGPA();
+  const box = document.getElementById("summary-stats");
   box.replaceChildren(
     el("div", { class: "stat" }, el("span", {}, "Dönem GPA"), el("b", { class: "big" }, gpa === null ? "—" : gpa.toFixed(2))),
+    el("div", { class: "stat" }, el("span", {}, "Genel GPA (CGPA)"), el("b", { class: "big alt" }, cumulative === null ? "—" : cumulative.toFixed(2))),
     el("div", { class: "stat" }, el("span", {}, "Hesaba katılan kredi"), el("b", {}, fmt(credits))),
     el("div", { class: "stat" }, el("span", {}, "Ders sayısı"), el("b", {}, state.courses.length)));
+}
+
+function renderSettings() {
+  document.querySelector('[data-action="prev-gpa"]').value = state.previous.gpa;
+  document.querySelector('[data-action="prev-credits"]').value = state.previous.credits;
+
+  const body = document.getElementById("scale-body");
+  body.replaceChildren(...state.scale.map((row, i) =>
+    el("tr", {},
+      el("td", {}, el("input", { value: row.letter, dataset: { action: "scale", field: "letter", index: i } })),
+      el("td", {}, el("input", { type: "number", min: 0, max: 100, step: "any", value: row.min, dataset: { action: "scale", field: "min", index: i } })),
+      el("td", {}, el("input", { type: "number", min: 0, max: 4, step: "0.01", value: row.points, dataset: { action: "scale", field: "points", index: i } })),
+      el("td", {}, el("button", { class: "icon-btn", title: "Satırı sil", dataset: { action: "scale-remove", index: i } }, "×")))));
 }
 
 // Yeniden render etmeden sonuçları günceller (odak kaybolmasın diye)
@@ -254,6 +302,7 @@ function updateResults() {
     }
   }
   renderSummary();
+  save();
 }
 
 function render() {
@@ -271,6 +320,17 @@ function onInput(e) {
   const t = e.target;
   const { action } = t.dataset;
   if (!action) return;
+
+  // Ders dışı ayarlar
+  if (action === "prev-gpa") { state.previous.gpa = t.value; updateResults(); return; }
+  if (action === "prev-credits") { state.previous.credits = t.value; updateResults(); return; }
+  if (action === "scale") {
+    const row = state.scale[Number(t.dataset.index)];
+    row[t.dataset.field] = t.dataset.field === "letter" ? t.value : (num(t.value) ?? 0);
+    updateResults();
+    return;
+  }
+
   const course = findCourse(t.dataset.course);
   if (!course) return;
   const comp = t.dataset.comp ? findComponent(course, t.dataset.comp) : null;
@@ -326,6 +386,21 @@ function onClick(e) {
 
   if (action === "add-course") {
     state.courses.push(makeCourse());
+  } else if (action === "scale-add") {
+    state.scale.push({ letter: "", min: 0, points: 0 });
+    renderSettings();
+    return;
+  } else if (action === "scale-remove") {
+    state.scale.splice(Number(t.dataset.index), 1);
+    renderSettings();
+  } else if (action === "scale-reset") {
+    state.scale = DEFAULT_SCALE.map((r) => ({ ...r }));
+    renderSettings();
+  } else if (action === "reset-all") {
+    if (!confirm("Tüm dersler ve ayarlar silinecek. Emin misin?")) return;
+    state = defaultState();
+    state.courses.push(makeCourse("Matematik"));
+    renderSettings();
   } else {
     const course = findCourse(t.dataset.course);
     if (!course) return;
@@ -349,6 +424,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("input", onInput);
   document.addEventListener("change", onInput);
   document.addEventListener("click", onClick);
-  state.courses.push(makeCourse("Matematik"));
+  if (!load()) state.courses.push(makeCourse("Matematik"));
+  renderSettings();
   render();
 });

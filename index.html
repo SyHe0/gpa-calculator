@@ -13,8 +13,42 @@
   </header>
 
   <main class="layout">
-    <section id="summary" class="summary card" aria-live="polite"></section>
+    <section class="summary card">
+      <div id="summary-stats" class="summary-stats" aria-live="polite"></div>
+    </section>
+
     <section id="courses" class="courses"></section>
+
+    <details class="settings card">
+      <summary>Ayarlar: önceki dönemler ve harf notu skalası</summary>
+
+      <div class="settings-grid">
+        <div>
+          <h3>Önceki dönemler</h3>
+          <p class="hint">Genel GPA (CGPA) hesabı için şimdiye kadarki ortalamanı ve tamamladığın krediyi gir.</p>
+          <label class="field">Önceki GPA
+            <input type="number" min="0" max="4" step="0.01" placeholder="örn. 3.12" data-action="prev-gpa">
+          </label>
+          <label class="field">Tamamlanan kredi
+            <input type="number" min="0" step="0.5" placeholder="örn. 60" data-action="prev-credits">
+          </label>
+          <button class="btn danger" data-action="reset-all">Her şeyi sıfırla</button>
+        </div>
+
+        <div>
+          <h3>Harf notu skalası</h3>
+          <p class="hint">Not, alt sınıra eşit ya da üstündeyse o harf verilir.</p>
+          <table class="scale">
+            <thead><tr><th>Harf</th><th>Alt sınır</th><th>Katsayı</th><th></th></tr></thead>
+            <tbody id="scale-body"></tbody>
+          </table>
+          <div class="row-actions">
+            <button class="btn" data-action="scale-add">+ Satır</button>
+            <button class="btn" data-action="scale-reset">Varsayılana dön</button>
+          </div>
+        </div>
+      </div>
+    </details>
   </main>
 
   <script src="app.js"></script>
