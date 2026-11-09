@@ -148,4 +148,65 @@ input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1
 .item { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
 .item input { width: 100%; }
 
-.add-comp { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.add-comp { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Ağırlık kontrolü */
+.weight { display: inline-flex; align-items: center; gap: 6px; }
+.weight input[type="range"] { width: 140px; padding: 0; accent-color: var(--accent); }
+.weight input[type="number"] { width: 64px; }
+.pct { color: var(--muted); }
+
+.toggle { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); cursor: pointer; }
+
+.share { display: flex; align-items: center; gap: 4px; }
+.share input { width: 60px !important; }
+.share-info { font-size: 11px; }
+.share-sum { margin-top: 8px; font-size: 12px; }
+.share-sum.ok { color: var(--ok); }
+.share-sum.bad { color: var(--bad); }
+
+/* Ders sonucu */
+.course-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.course-result { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+.badge {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.badge.ok { color: var(--ok); border-color: #b7e2c8; background: #effaf3; }
+.badge.bad { color: var(--bad); border-color: #f1c4c0; background: #fdf1f0; }
+
+.result-score { display: inline-flex; align-items: center; gap: 6px; }
+.letter {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+/* Özet */
+.summary {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.stat { display: grid; gap: 2px; }
+.stat span { color: var(--muted); font-size: 12px; }
+.stat b { font-size: 18px; }
+.stat b.big { font-size: 32px; color: var(--accent); }
