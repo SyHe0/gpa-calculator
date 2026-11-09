@@ -117,9 +117,15 @@ function courseResult(course) {
     total += avg * effW;
     coveredWeight += effW;
   }
+  // Harf notu doğrudan girildiyse (ör. curve'lü dersler) notlardan hesaplanan sonuç yok sayılır
+  if (course.letterOverride) {
+    const grade = state.scale.find((r) => r.letter === course.letterOverride) || null;
+    return { weightSum, coveredWeight, score: null, grade, override: true };
+  }
+
   const score = coveredWeight > 0 ? total / coveredWeight : null;
   const grade = score === null ? null : letterFor(score);
-  return { weightSum, coveredWeight, score, grade };
+  return { weightSum, coveredWeight, score, grade, override: false };
 }
 
 function letterFor(score) {
@@ -237,14 +243,29 @@ function renderCourse(course) {
           type: "number", min: 0, max: 30, step: "0.5", value: course.credits,
           dataset: { action: "credits", course: course.id },
         })),
+      el("label", { class: "credits" }, "Harf notu",
+        el("select", {
+          class: `letter-select${course.letterOverride ? " active" : ""}`,
+          title: "Curve gibi durumlarda harf notunu doğrudan seç",
+          dataset: { action: "letter-override", course: course.id },
+        },
+          el("option", { value: "" }, "Notlardan hesapla"),
+          state.scale.filter((r) => r.letter).map((r) =>
+            el("option", { value: r.letter, selected: r.letter === course.letterOverride }, `${r.letter} (${Number(r.points).toFixed(2)})`)))),
       el("button", {
         class: "btn danger", dataset: { action: "remove-course", course: course.id },
       }, "Dersi sil")),
-    el("div", { class: "components" }, course.components.map((c) => renderComponent(course, c))),
-    el("div", { class: "course-foot" },
+    course.letterOverride
+      ? el("p", { class: "override-note" },
+          `Harf notu doğrudan ${course.letterOverride} olarak girildi; aşağıdaki notlar hesaba katılmıyor. `,
+          "Notlarla hesaplamak için “Harf notu” alanını “Notlardan hesapla” yap.")
+      : null,
+    el("fieldset", { class: "grade-inputs", disabled: !!course.letterOverride },
+      el("div", { class: "components" }, course.components.map((c) => renderComponent(course, c))),
       el("div", { class: "add-comp" },
         el("select", { dataset: { role: "comp-type", course: course.id } }, addOptions),
-        el("button", { class: "btn", dataset: { action: "add-comp", course: course.id } }, "+ Bileşen ekle")),
+        el("button", { class: "btn", dataset: { action: "add-comp", course: course.id } }, "+ Bileşen ekle"))),
+    el("div", { class: "course-foot" },
       el("div", { class: "course-result", dataset: { result: course.id } })));
 }
 
@@ -276,7 +297,13 @@ function updateResults() {
   for (const course of state.courses) {
     const r = courseResult(course);
     const box = document.querySelector(`[data-result="${course.id}"]`);
-    if (box) {
+    if (box && r.override) {
+      box.replaceChildren(
+        el("span", { class: "badge" }, "Harf notu doğrudan girildi"),
+        r.grade
+          ? el("span", { class: "result-score" }, el("span", { class: "letter" }, `${r.grade.letter} · ${Number(r.grade.points).toFixed(2)}`))
+          : el("span", { class: "badge bad" }, "Bu harf skalada yok, GPA'ya katılmıyor"));
+    } else if (box) {
       const okWeight = Math.abs(r.weightSum - 100) < 0.01;
       box.replaceChildren(
         el("span", { class: `badge ${okWeight ? "ok" : "bad"}` },
@@ -405,6 +432,11 @@ function onInput(e) {
     case "credits":
       course.credits = t.value;
       break;
+    case "letter-override":
+      if (e.type !== "change") return;
+      course.letterOverride = t.value;
+      render();
+      return;
     case "score":
       comp.items[Number(t.dataset.index)].score = t.value;
       break;

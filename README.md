@@ -11,6 +11,7 @@ Tarayıcıda çalışan, kurulum gerektirmeyen bir GPA hesaplayıcı.
 - **Ayrı yüzdeler**: bir bileşenin içindeki öğelere (ör. Quiz 1 %70, Quiz 2 %30) farklı pay verilebilir
 - **Kısmi hesap**: henüz girilmemiş notlar hesaba katılmaz, o ana kadarki ortalama gösterilir
 - **Dönem GPA ve Genel GPA (CGPA)**: önceki GPA ve kredi girilirse genel ortalama hesaplanır
+- **Direkt harf notu**: curve'lü derslerde harf notu doğrudan seçilebilir; seçilince o dersin not alanları kilitlenir ve GPA'ya seçilen harf katılır
 - **Düzenlenebilir harf notu skalası** (varsayılan: AA–FF, 4'lük sistem)
 - Veriler tarayıcıda (`localStorage`) otomatik saklanır
 - **Boğaziçi'den ders seç**: Boğaziçi ders programındaki tüm dersler (kod, ad, kredi, AKTS) aranıp tek tıkla eklenir

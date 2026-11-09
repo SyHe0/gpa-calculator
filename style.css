@@ -218,6 +218,19 @@ input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1
 .scale input { width: 100%; }
 .row-actions { display: flex; gap: 8px; margin-top: 8px; }
 
+/* Doğrudan harf notu */
+.letter-select.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.override-note {
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 13px;
+}
+.grade-inputs { border: none; margin: 0; padding: 0; min-width: 0; display: grid; gap: 12px; }
+.grade-inputs:disabled { opacity: 0.45; pointer-events: none; user-select: none; }
+
 .topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .btn:disabled { opacity: 0.6; cursor: default; }
 
